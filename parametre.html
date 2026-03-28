@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#A67C00">
+    <title>Sarkin Wanka — Paramètres</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.v2.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body class="light-theme">
+<div class="app-container">
+    <nav class="sidebar glass-panel">
+        <div class="sidebar-header" style="justify-content:center;padding:16px 0 0;">
+            <div class="logo" style="flex-direction:column;gap:8px;margin-bottom:2rem;">
+                <img src="https://ui-avatars.com/api/?name=Sarkin+Wanka&background=A67C00&color=fff&size=256" alt="Sarkin Wanka" style="width:100px;height:100px;border-radius:50%;object-fit:cover;box-shadow:0 4px 16px rgba(166,124,0,0.3);">
+            </div>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fa-solid fa-calendar-day"></i> Agenda</a></li>
+            <li><a href="atelier.html"><i class="fa-solid fa-tape"></i> Atelier</a></li>
+            <li><a href="boutique.html"><i class="fa-solid fa-store"></i> Boutique</a></li>
+            <li><a href="bibliotheque.html"><i class="fa-solid fa-book-open"></i> Bibliothèque</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="btn-icon"><i class="fa-solid fa-moon"></i></button>
+        </div>
+    </nav>
+
+    <nav class="bottom-nav">
+        <ul>
+            <li><a href="index.html"><i class="fa-solid fa-calendar-day"></i><span>Agenda</span></a></li>
+            <li><a href="atelier.html"><i class="fa-solid fa-tape"></i><span>Atelier</span></a></li>
+            <li><a href="boutique.html"><i class="fa-solid fa-store"></i><span>Boutique</span></a></li>
+            <li><a href="bibliotheque.html"><i class="fa-solid fa-book-open"></i><span>Biblio</span></a></li>
+            <li class="active"><a href="parametre.html"><i class="fa-solid fa-gear"></i><span>Réglages</span></a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div>
+                <h1><i class="fa-solid fa-gear" style="color:var(--primary-color);font-size:1.8rem;"></i> Paramètres</h1>
+                <p class="subtitle">Gérer votre profil et vos préférences</p>
+            </div>
+        </header>
+
+        <section class="agenda-section">
+            <div class="settings-card">
+                <h2 class="settings-section-title">Profil &amp; Entreprise</h2>
+
+                <div class="form-group" style="text-align:center;margin-bottom:1.8rem;">
+                    <img id="profile-pic-preview" src="https://ui-avatars.com/api/?name=Sarkin+Wanka&background=A67C00&color=fff"
+                         style="width:90px;height:90px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:3px solid var(--primary-color);box-shadow:var(--shadow-gold);">
+                    <br>
+                    <label for="profile-upload" class="btn btn-secondary" style="cursor:pointer;display:inline-flex;margin-top:8px;">
+                        <i class="fa-solid fa-camera"></i> Changer la photo
+                    </label>
+                    <input type="file" id="profile-upload" accept="image/*" style="display:none;">
+                </div>
+
+                <div class="form-group">
+                    <label>Nom de l'entreprise ou Tailleur</label>
+                    <input type="text" id="setting-name" value="Sarkin Wanka Fashion Design">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Téléphone principal</label>
+                        <input type="tel" id="setting-phone" value="+227 92 62 27 64">
+                    </div>
+                    <div class="form-group">
+                        <label>Devise</label>
+                        <select id="setting-currency">
+                            <option value="FCFA">FCFA</option>
+                            <option value="EUR">Euro (€)</option>
+                            <option value="USD">Dollar ($)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse de l'Atelier</label>
+                    <input type="text" id="setting-address" value="Niamey, Niger">
+                </div>
+
+                <div style="margin-top:1.5rem;">
+                    <button type="button" class="btn btn-primary" id="save-btn" style="width:100%;justify-content:center;padding:13px;" onclick="doSaveSettings()">
+                        <i class="fa-solid fa-save"></i> Enregistrer les modifications
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section Sécurité Admin -->
+            <div class="settings-card" style="margin-top:1.5rem;">
+                <h2 class="settings-section-title"><i class="fa-solid fa-shield-halved" style="color:var(--primary-color);"></i> Sécurité Administrateur</h2>
+                <div class="form-group">
+                    <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:12px;">Modifiez le mot de passe maître de l'application principal. Vous pouvez aussi utiliser le code de réinitialisation (92622764) à la place de l'ancien mot de passe en cas d'oubli.</p>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ancien mot de passe</label>
+                        <input type="password" id="admin-old-pass" autocomplete="new-password" placeholder="Mot de passe actuel">
+                    </div>
+                    <div class="form-group">
+                        <label>Nouveau mot de passe</label>
+                        <input type="password" id="admin-new-pass" autocomplete="new-password" placeholder="Le nouveau mot de passe">
+                    </div>
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <button type="button" class="btn btn-primary" style="background:var(--danger-color);" onclick="doChangeAdminPassword()">
+                        <i class="fa-solid fa-key"></i> Changer mon mot de passe
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section Tailleurs -->
+            <div class="settings-card" style="margin-top:1.5rem;">
+                <h2 class="settings-section-title">Comptes Tailleurs</h2>
+                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+                    <input type="text" id="new-t-user" placeholder="Nom d'utilisateur" style="flex:1;min-width:140px;padding:11px 14px;border:var(--border-subtle);border-radius:var(--border-radius-sm);background:var(--bg-color);color:var(--text-main);font-family:'Outfit';font-size:16px;">
+                    <input type="password" id="new-t-pass" placeholder="Mot de passe" autocomplete="new-password" style="flex:1;min-width:140px;padding:11px 14px;border:var(--border-subtle);border-radius:var(--border-radius-sm);background:var(--bg-color);color:var(--text-main);font-family:'Outfit';font-size:16px;">
+                    <button class="btn btn-primary" onclick="doAddTailor()"><i class="fa-solid fa-plus"></i> Créer</button>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:2px solid rgba(166,124,0,0.12);">
+                                <th style="padding:10px;font-size:0.76rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;">Tailleur</th>
+                                <th style="padding:10px;text-align:right;font-size:0.76rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tailors-list-body"><tr><td colspan="2" style="padding:16px;text-align:center;color:var(--text-muted)"><i class="fa-solid fa-spinner fa-spin"></i> Chargement…</td></tr></tbody>
+                    </table>
+                </div>
+                <div style="margin-top:1.2rem;">
+                    <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="window.open('tailleur.html','_blank')">
+                        <i class="fa-solid fa-scissors"></i> Accéder à l'Espace Tailleur
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="assets/js/app.v2.js"></script>
+<script>
+async function loadSettingsUI() {
+    const s = await getSettings();
+    if (s.name)     document.getElementById('setting-name').value    = s.name;
+    if (s.phone)    document.getElementById('setting-phone').value   = s.phone;
+    if (s.address)  document.getElementById('setting-address').value = s.address;
+    if (s.currency) document.getElementById('setting-currency').value = s.currency;
+    if (s.photo)    document.getElementById('profile-pic-preview').src = s.photo;
+}
+
+async function doSaveSettings() {
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enregistrement…';
+
+    const photo = document.getElementById('profile-pic-preview').src;
+    // Ne pas stocker de base64 massif si c'est l'avatar par défaut
+    const photoToStore = photo.startsWith('data:') ? photo : photo;
+
+    const s = {
+        name:     document.getElementById('setting-name').value,
+        phone:    document.getElementById('setting-phone').value,
+        address:  document.getElementById('setting-address').value,
+        currency: document.getElementById('setting-currency').value,
+        photo:    photoToStore
+    };
+    await saveSettings(s);
+
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Enregistré !';
+    btn.style.background = 'var(--success-color)';
+    setTimeout(() => {
+        btn.innerHTML = '<i class="fa-solid fa-save"></i> Enregistrer les modifications';
+        btn.style.background = '';
+        btn.disabled = false;
+    }, 2000);
+}
+
+async function loadTailorsUI() {
+    const body = document.getElementById('tailors-list-body');
+    if (!body) return;
+    const tailors = await getTailors();
+    body.innerHTML = '';
+    if (tailors.length === 0) {
+        body.innerHTML = '<tr><td colspan="2" style="padding:16px;text-align:center;color:var(--text-muted);font-size:0.9rem;">Aucun tailleur configuré.</td></tr>';
+        return;
+    }
+    tailors.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = 'var(--border-subtle)';
+        tr.innerHTML = `
+            <td style="padding:12px 10px;font-weight:600;"><i class="fa-solid fa-user-tie" style="color:var(--primary-color);margin-right:8px;"></i>${t.username}</td>
+            <td style="padding:12px 10px;text-align:right;">
+                <button class="btn btn-secondary" style="padding:5px 10px;font-size:0.8rem;" onclick="doResetTPass('${t.username}')"><i class="fa-solid fa-key"></i></button>
+                <button class="btn btn-secondary" style="padding:5px 10px;font-size:0.8rem;color:var(--danger-color);" onclick="doDelT('${t.username}')"><i class="fa-solid fa-trash"></i></button>
+            </td>`;
+        body.appendChild(tr);
+    });
+}
+
+async function doAddTailor() {
+    const u = document.getElementById('new-t-user').value.trim();
+    const p = document.getElementById('new-t-pass').value.trim();
+    if (!u || !p) { showToast("Remplissez le nom et le mot de passe.", "error"); return; }
+    const tailors = await getTailors();
+    if (tailors.find(x => x.username.toLowerCase() === u.toLowerCase())) {
+        showToast("Ce nom d'utilisateur existe déjà.", "error"); return;
+    }
+    await addTailor(u, p);
+    document.getElementById('new-t-user').value = '';
+    document.getElementById('new-t-pass').value = '';
+    showToast(`Compte de ${u} créé !`);
+    loadTailorsUI();
+}
+
+async function doResetTPass(u) {
+    const newP = prompt(`Nouveau mot de passe pour ${u} ?`);
+    if (!newP) return;
+    if (db) {
+        try {
+            const hash = await hashPassword(newP);
+            const snap = await db.collection('tailors').where('username', '==', u).get();
+            snap.forEach(d => d.ref.update({ passwordHash: hash, password: null }));
+        } catch(e) { console.error(e); }
+    }
+    let local = JSON.parse(localStorage.getItem('sw_tailors') || '[]');
+    const t = local.find(x => x.username === u);
+    if (t) { t.password = newP; localStorage.setItem('sw_tailors', JSON.stringify(local)); }
+    showToast(`Mot de passe de ${u} mis à jour.`);
+    loadTailorsUI();
+}
+
+async function doDelT(u) {
+    const ok = await showConfirmModal(`Supprimer l'accès de ${u} ?`);
+    if (!ok) return;
+    await deleteTailor(u);
+    showToast(`Compte de ${u} supprimé.`);
+    loadTailorsUI();
+}
+
+document.getElementById('profile-upload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { document.getElementById('profile-pic-preview').src = ev.target.result; };
+    reader.readAsDataURL(file);
+});
+
+async function doChangeAdminPassword() {
+    const oldP = document.getElementById('admin-old-pass').value;
+    const newP = document.getElementById('admin-new-pass').value.trim();
+    if (!oldP || !newP) {
+        showToast("Veuillez remplir l'ancien et le nouveau mot de passe.", "error"); return;
+    }
+    const hashOld = await hashAdminPassword(oldP);
+    const stored = await getAdminPasswordHash();
+    
+    // Check old password or RESET_CODE
+    if (hashOld !== stored && oldP !== RESET_CODE && (oldP !== 'admin' || stored !== await hashAdminPassword('admin'))) {
+        showToast("L'ancien mot de passe est incorrect.", "error"); return;
+    }
+    
+    const hashNew = await hashAdminPassword(newP);
+    const s = await getSettings();
+    s.adminPasswordHash = hashNew;
+    await saveSettings(s);
+    
+    document.getElementById('admin-old-pass').value = '';
+    document.getElementById('admin-new-pass').value = '';
+    showToast("Mot de passe administrateur sécurisé avec succès !");
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadSettingsUI();
+    await loadTailorsUI();
+});
+</script>
+</body>
+</html>
