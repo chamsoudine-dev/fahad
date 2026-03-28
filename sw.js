@@ -1,7 +1,7 @@
 // ===================================================================
-// SERVICE WORKER — Sarkin Wanka v1.0
+// SERVICE WORKER — Sarkin Wanka v2.0 (enregistrement instantané)
 // ===================================================================
-const CACHE_NAME = 'sw-cache-v5';
+const CACHE_NAME = 'sw-cache-v6';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
