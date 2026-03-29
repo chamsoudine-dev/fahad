@@ -1029,9 +1029,86 @@ async function renderTailleur() {
 async function finishTailleurTask(id) {
     const ok = await showConfirmModal("Le vêtement est-il terminé et prêt pour la boutique ?");
     if (!ok) return;
+
+    // Récupérer les infos de la tâche avant de changer son étape
+    const tasks = await getTasks();
+    const task = tasks.find(t => t.id === id);
+
     await updateTaskStep(id, 'boutique');
     renderTailleur();
-    showToast("Pièce envoyée en boutique !");
+    showToast("🎉 Pièce envoyée en boutique !");
+
+    // ✅ Notifier l'admin (navigateur + WhatsApp)
+    if (task) _notifyAdminTailorFinished(task);
+}
+
+// Notification admin via Navigateur + WhatsApp quand tailleur termine
+async function _notifyAdminTailorFinished(task) {
+    const tailor = (typeof currentTailorUser !== 'undefined' && currentTailorUser)
+        ? currentTailorUser : 'Votre tailleur';
+
+    // --- Notification Navigateur ---
+    if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+            new Notification('✅ Commande terminée !', {
+                body: `${tailor} a terminé : ${task.client} — ${task.type}`,
+                icon: window.location.href.replace(/\/[^\/]*$/, '/') + 'assets/img/logo.png',
+                tag: 'tailor-done-' + task.id
+            });
+        }
+    }
+
+    // --- WhatsApp vers l'admin ---
+    const settings = await getSettings();
+    const adminPhone = (settings.phone || '').replace(/[^0-9]/g, '');
+    if (!adminPhone) return;
+
+    const dateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString('fr-FR') : '';
+    const cur = settings.currency || 'FCFA';
+    const msg = encodeURIComponent(
+        `✅ *COMMANDE TERMINÉE !*\n` +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `🧵 *Tailleur :* ${tailor}\n` +
+        `👤 *Client :* ${task.client}\n` +
+        `👗 *Article :* ${task.type}\n` +
+        (dateStr ? `📅 *Livraison :* ${dateStr}\n` : '') +
+        (task.price ? `💰 *Montant :* ${formatMoney(task.price)} ${cur}\n` : '') +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `📦 La pièce est prête en *Boutique* !\n` +
+        `👉 Connectez-vous sur l\'app pour confirmer.`
+    );
+    const waWin = window.open(`https://wa.me/${adminPhone}?text=${msg}`, '_blank');
+    if (!waWin) showToast('📱 Ouvrez WhatsApp pour notifier l\'admin', 'info');
+}
+
+// Polling admin : détecte quand une pièce arrive en boutique (de n'importe quel tailleur)
+let _adminBoutiqueInterval = null;
+let _adminBoutiqueCache = null;
+
+function startAdminBoutiquePolling() {
+    if (_adminBoutiqueInterval) clearInterval(_adminBoutiqueInterval);
+    _adminBoutiqueCache = null;
+    _adminBoutiqueInterval = setInterval(async () => {
+        const tasks = await getTasks();
+        const boutiqueIds = new Set(tasks.filter(t => t.step === 'boutique').map(t => t.id));
+
+        if (_adminBoutiqueCache !== null) {
+            const newItems = tasks.filter(t => t.step === 'boutique' && !_adminBoutiqueCache.has(t.id));
+            newItems.forEach(task => {
+                showToast(`✅ ${task.client} — ${task.type} est prêt en boutique !`, 'success');
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('🎉 Pièce prête en boutique !', {
+                        body: `${task.client} — ${task.type}${task.assignee ? ' (par ' + task.assignee + ')' : ''}`,
+                        icon: window.location.href.replace(/\/[^\/]*$/, '/') + 'assets/img/logo.png',
+                        tag: 'admin-boutique-' + task.id
+                    });
+                }
+                renderBoutique();
+                updateStats();
+            });
+        }
+        _adminBoutiqueCache = boutiqueIds;
+    }, 30000);
 }
 
 // ===================================================================
@@ -1096,59 +1173,117 @@ function printReceipt(taskOrJson) {
         const shopPhone = settings.phone || "+227 92 62 27 64";
         const shopAddr  = settings.address || "Niamey, Niger";
         const cur       = settings.currency || "FCFA";
-        const shopLogo  = settings.photo || '';
+        // Logo : priorité à la photo du profil, sinon le fichier logo.png du site
+        const siteBase  = window.location.href.replace(/\/[^\/]*$/, '/');
+        const shopLogo  = settings.photo || (siteBase + 'assets/img/logo.png');
 
         const dateStr   = new Date(task.dueDate).toLocaleDateString('fr-FR');
         const dateToday = new Date().toLocaleDateString('fr-FR');
         const ref       = 'SW-' + (task.id || '').toString().slice(-6).toUpperCase();
 
-        let whatsappLink = '';
+        // ✅ Message WhatsApp PREMIUM bien formaté pour le client
+        let waClientLink = '';
         if (task.phone) {
-            const cp  = task.phone.replace(/[^0-9]/g, '');
-            const msg = encodeURIComponent(`Bonjour, voici le reçu de votre commande chez ${shopName}.\nRéf: ${ref}\nMontant: ${task.price ? formatMoney(task.price) + ' ' + cur : 'N/A'}`);
-            whatsappLink = `<a href="https://wa.me/${cp}?text=${msg}" target="_blank" style="display:inline-block;margin-top:15px;background:#25D366;color:white;padding:10px 20px;text-decoration:none;border-radius:6px;font-weight:bold;">Envoyer via WhatsApp</a>`;
+            const cp = task.phone.replace(/[^0-9]/g, '');
+            const clientMsg = encodeURIComponent(
+                `🏆 *${shopName.toUpperCase()}*\n` +
+                `━━━━━━━━━━━━━━━━━━━━\n` +
+                `📋 *Réf :* ${ref}\n` +
+                `📅 *Enregistré le :* ${dateToday}\n` +
+                `━━━━━━━━━━━━━━━━━━━━\n` +
+                `👤 *Client :* ${task.client}\n` +
+                `👗 *Article :* ${task.type}\n` +
+                `📅 *Date de livraison :* ${dateStr}\n` +
+                (task.assignee ? `🧵 *Tailleur :* ${task.assignee}\n` : '') +
+                (task.notes ? `📝 *Notes :* ${task.notes}\n` : '') +
+                `━━━━━━━━━━━━━━━━━━━━\n` +
+                (task.price ? `💰 *Montant :* ${formatMoney(task.price)} ${cur}\n` : '') +
+                `━━━━━━━━━━━━━━━━━━━━\n` +
+                `✨ Merci pour votre confiance !\n` +
+                `📞 ${shopPhone} | 📍 ${shopAddr}`
+            );
+            waClientLink = `https://wa.me/${cp}?text=${clientMsg}`;
         }
 
         win.document.write(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Reçu ${ref}</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reçu ${ref} — ${shopName}</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif;}
-  body{color:#1A1A1A;margin:40px;background:#FBF9F4;}
-  .box{border:2px solid #A67C00;padding:30px;border-radius:12px;max-width:580px;margin:0 auto;background:#fff;}
-  .hdr{text-align:center;margin-bottom:24px;border-bottom:1px solid #eee;padding-bottom:18px;}
-  .hdr img{width:90px;height:90px;object-fit:cover;border-radius:50%;border:3px solid #A67C00;}
-  .hdr h1{margin:10px 0 4px;color:#A67C00;font-size:22px;letter-spacing:0.05em;}
-  .hdr p{color:#888;font-size:13px;}
-  .ref{background:#FDF9EE;color:#A67C00;padding:5px 12px;border-radius:20px;font-weight:700;font-size:13px;display:inline-block;margin:10px 0;}
-  .row{display:flex;justify-content:space-between;border-bottom:1px dashed #eee;padding:10px 0;font-size:14px;}
-  .row strong{color:#555;}
-  .amount{font-size:20px;font-weight:700;color:#A67C00;}
-  .footer{text-align:center;color:#aaa;font-size:12px;margin-top:20px;padding-top:14px;border-top:1px solid #eee;}
-  .actions{margin-top:20px;text-align:center;}
-  @media print{.actions{display:none;}body{margin:20px;background:white;}}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Outfit',sans-serif;background:#111;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:30px 16px;}
+  .card{background:#fff;max-width:440px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.6);}
+  /* HEADER NOIR PREMIUM */
+  .header{background:linear-gradient(160deg,#1a1a1a 0%,#2c2c2c 100%);padding:35px 24px 28px;text-align:center;position:relative;}
+  .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#A67C00,#D4A800,#A67C00,transparent);}
+  .logo-ring{display:inline-block;border-radius:50%;background:linear-gradient(135deg,#A67C00,#D4A800,#A67C00);padding:4px;margin-bottom:16px;box-shadow:0 0 30px rgba(166,124,0,0.5);}
+  .logo-ring img{width:130px;height:130px;border-radius:50%;object-fit:cover;display:block;border:3px solid #111;}
+  .shop-name{font-family:'Cormorant Garamond',serif;color:#A67C00;font-size:20px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+  .shop-sub{color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:3px;text-transform:uppercase;}
+  .badge-ref{display:inline-block;background:linear-gradient(90deg,#A67C00,#D4A800);color:#fff;padding:6px 20px;border-radius:30px;font-weight:700;font-size:12px;letter-spacing:1.5px;margin-top:14px;}
+  /* BODY */
+  .body{padding:24px;}
+  .section-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#A67C00;font-weight:700;margin-bottom:6px;margin-top:18px;}
+  .section-label:first-child{margin-top:0;}
+  .field-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed rgba(0,0,0,0.08);}
+  .field-row:last-child{border-bottom:none;}
+  .field-label{font-size:12px;color:#888;font-weight:500;}
+  .field-val{font-size:14px;color:#1a1a1a;font-weight:600;text-align:right;max-width:60%;}
+  /* MONTANT */
+  .amount-box{background:linear-gradient(135deg,#FFF9E6,#FFF0CC);border:2px solid #A67C00;border-radius:14px;padding:18px;text-align:center;margin:20px 0;}
+  .amount-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A67C00;font-weight:700;}
+  .amount-val{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:#A67C00;line-height:1.2;margin-top:4px;}
+  /* ACTIONS */
+  .actions{padding:0 24px 24px;display:flex;flex-direction:column;gap:12px;}
+  .btn{padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:transform 0.1s;}
+  .btn:active{transform:scale(0.98);}
+  .btn-wa{background:linear-gradient(135deg,#25D366,#1ebe5d);color:#fff;box-shadow:0 4px 15px rgba(37,211,102,0.3);}
+  .btn-print{background:#1a1a1a;color:#A67C00;border:2px solid #A67C00;}
+  /* FOOTER */
+  .footer{background:#f8f8f8;padding:14px 24px;text-align:center;border-top:1px solid #f0f0f0;}
+  .footer p{font-size:11px;color:#aaa;line-height:1.8;}
+  @media print{
+    body{background:white;padding:0;}
+    .card{box-shadow:none;border-radius:0;max-width:100%;}
+    .actions{display:none !important;}
+    .header::after{display:none;}
+  }
 </style></head>
-<body onload="setTimeout(()=>window.print(),800)">
-<div class="box">
-  <div class="hdr">
-    ${shopLogo ? `<img src="${shopLogo}" onerror="this.style.display='none'">` : ''}
-    <h1>${shopName.toUpperCase()}</h1>
-    <p>${shopAddr} — Tél: ${shopPhone}</p>
-    <p style="margin-top:8px;font-size:15px;font-weight:600;">REÇU DE COMMANDE</p>
-    <span class="ref">${ref}</span>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="logo-ring"><img src="${shopLogo}" alt="${shopName}" onerror="this.parentNode.style.display='none'"></div>
+    <div class="shop-name">${shopName}</div>
+    <div class="shop-sub">Fashion Design</div>
+    <div class="badge-ref">${ref}</div>
   </div>
-  <div class="row"><strong>Date d'enregistrement</strong><span>${dateToday}</span></div>
-  <div class="row"><strong>Client</strong><span>${task.client}</span></div>
-  <div class="row"><strong>Contact</strong><span>${task.phone || 'N/A'}</span></div>
-  <div class="row"><strong>Type d'article</strong><span>${task.type}</span></div>
-  <div class="row"><strong>Date de livraison</strong><span>${dateStr}</span></div>
-  ${task.assignee ? `<div class="row"><strong>Tailleur assigné</strong><span>${task.assignee}</span></div>` : ''}
-  <div class="row"><strong>Montant</strong><span class="amount">${task.price ? formatMoney(task.price) + ' ' + cur : '—'}</span></div>
-  <div class="footer">Merci pour votre confiance — ${shopName}</div>
-</div>
-<div class="actions">
-  <button onclick="window.print()" style="padding:10px 22px;background:#A67C00;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;">🖨 Enregistrer en PDF</button>
-  <br>${whatsappLink}
+
+  <div class="body">
+    <div class="section-label">Informations du reçu</div>
+    <div class="field-row"><span class="field-label">Date d'enregistrement</span><span class="field-val">${dateToday}</span></div>
+    <div class="field-row"><span class="field-label">Date de livraison</span><span class="field-val">${dateStr}</span></div>
+
+    <div class="section-label">Client</div>
+    <div class="field-row"><span class="field-label">Nom</span><span class="field-val">${task.client}</span></div>
+    <div class="field-row"><span class="field-label">WhatsApp</span><span class="field-val">${task.phone || 'N/A'}</span></div>
+
+    <div class="section-label">Commande</div>
+    <div class="field-row"><span class="field-label">Article</span><span class="field-val">${task.type}</span></div>
+    ${task.assignee ? `<div class="field-row"><span class="field-label">Tailleur assigné</span><span class="field-val">${task.assignee}</span></div>` : ''}
+    ${task.notes ? `<div class="field-row"><span class="field-label">Mesures / Notes</span><span class="field-val" style="font-size:12px;">${task.notes}</span></div>` : ''}
+
+    ${task.price ? `<div class="amount-box"><div class="amount-label">Montant Total</div><div class="amount-val">${formatMoney(task.price)} ${cur}</div></div>` : ''}
+  </div>
+
+  <div class="actions">
+    ${waClientLink ? `<a href="${waClientLink}" target="_blank" class="btn btn-wa">📱 Envoyer le reçu via WhatsApp</a>` : ''}
+    <button onclick="window.print()" class="btn btn-print">🖨&nbsp; Sauvegarder en PDF</button>
+  </div>
+
+  <div class="footer">
+    <p>📞 ${shopPhone} &nbsp;|&nbsp; 📍 ${shopAddr}</p>
+    <p style="margin-top:2px;">Merci pour votre fidélité — <strong>${shopName}</strong></p>
+  </div>
 </div>
 </body></html>`);
         win.document.close();
@@ -1430,16 +1565,26 @@ function setupPhoneAutocomplete() {
 document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
     updateDateDisplay();
-    
+
     injectAdminModals();
 
     const ok = await initFirebase();
     if (!ok) {
         console.warn("Firebase non disponible, mode local activé.");
     }
-    
+
     await checkAdminAuth();
     setupPhoneAutocomplete();
+
+    // ✅ Demander permission notifications navigateur (une seule fois)
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+
+    // ✅ Polling admin : alertes quand un tailleur termine (pages admin seulement)
+    if (!window.location.pathname.includes('tailleur.html')) {
+        startAdminBoutiquePolling();
+    }
 
     await renderAgenda();
     await updateStats();
