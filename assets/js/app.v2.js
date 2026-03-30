@@ -1195,104 +1195,245 @@ function printReceipt(taskOrJson) {
                 `👗 *Article :* ${task.type}\n` +
                 `📅 *RDV :* ${dateStr}\n` +
                 (task.assignee ? `🧵 *Tailleur :* ${task.assignee}\n` : '') +
-                (task.notes ? `📝 *Notes :* ${task.notes}\n` : '') +
-                `━━━━━━━━━━━━━━━━━━━━\n` +
-                (task.price ? `💰 *Montant :* ${formatMoney(task.price)} ${cur}\n` : '') +
-                `━━━━━━━━━━━━━━━━━━━━\n` +
-                `✨ Merci pour votre confiance !\n` +
-                `📞 ${shopPhone} | 📍 ${shopAddr}`
-            );
-            waClientLink = `https://wa.me/${cp}?text=${clientMsg}`;
-        }
-
-        win.document.write(`<!DOCTYPE html>
+                (task.no        win.document.write(`<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Reçu ${ref} — ${shopName}</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Outfit',sans-serif;background:#111;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:30px 16px;}
-  .card{background:#fff;max-width:440px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.6);position:relative;}
-  /* FILIGRANE LOGO EN ARRIÈRE-PLAN */
-  .card::before{content:'';position:absolute;inset:0;background:url('${shopLogo}') center/55% no-repeat;opacity:0.06;filter:blur(2px) grayscale(30%);pointer-events:none;z-index:0;}
-  .card > *{position:relative;z-index:1;}
-  /* HEADER NOIR PREMIUM */
-  .header{background:linear-gradient(160deg,#1a1a1a 0%,#2c2c2c 100%);padding:35px 24px 28px;text-align:center;position:relative;}
-  .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#A67C00,#D4A800,#A67C00,transparent);}
-  .logo-ring{display:inline-block;border-radius:50%;background:linear-gradient(135deg,#A67C00,#D4A800,#A67C00);padding:4px;margin-bottom:16px;box-shadow:0 0 30px rgba(166,124,0,0.5);}
-  .logo-ring img{width:130px;height:130px;border-radius:50%;object-fit:cover;display:block;border:3px solid #111;}
-  .shop-name{font-family:'Cormorant Garamond',serif;color:#A67C00;font-size:20px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
-  .shop-sub{color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:3px;text-transform:uppercase;}
-  .shop-country{color:rgba(166,124,0,0.85);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;margin-top:3px;font-weight:600;}
-  .badge-ref{display:inline-block;background:linear-gradient(90deg,#A67C00,#D4A800);color:#fff;padding:6px 20px;border-radius:30px;font-weight:700;font-size:12px;letter-spacing:1.5px;margin-top:14px;}
-  /* BODY */
-  .body{padding:24px;}
-  .section-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#A67C00;font-weight:700;margin-bottom:6px;margin-top:18px;}
-  .section-label:first-child{margin-top:0;}
-  .field-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed rgba(0,0,0,0.08);}
-  .field-row:last-child{border-bottom:none;}
-  .field-label{font-size:12px;color:#888;font-weight:500;}
-  .field-val{font-size:14px;color:#1a1a1a;font-weight:600;text-align:right;max-width:60%;}
-  /* MONTANT */
-  .amount-box{background:linear-gradient(135deg,#FFF9E6,#FFF0CC);border:2px solid #A67C00;border-radius:14px;padding:18px;text-align:center;margin:20px 0;}
-  .amount-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A67C00;font-weight:700;}
-  .amount-val{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:#A67C00;line-height:1.2;margin-top:4px;}
-  /* ACTIONS */
-  .actions{padding:0 24px 24px;display:flex;flex-direction:column;gap:12px;}
-  .btn{padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:transform 0.1s;}
-  .btn:active{transform:scale(0.98);}
-  .btn-wa{background:linear-gradient(135deg,#25D366,#1ebe5d);color:#fff;box-shadow:0 4px 15px rgba(37,211,102,0.3);}
-  .btn-print{background:#1a1a1a;color:#A67C00;border:2px solid #A67C00;}
-  /* FOOTER */
-  .footer{background:#f8f8f8;padding:14px 24px;text-align:center;border-top:1px solid #f0f0f0;}
-  .footer p{font-size:11px;color:#aaa;line-height:1.8;}
-  .footer-logo{width:36px;height:36px;border-radius:50%;object-fit:cover;opacity:0.6;margin-bottom:6px;border:2px solid #A67C00;}
+  html,body{width:100%;min-height:100%;}
+  body{font-family:'Outfit',sans-serif;background:#0e0e0e;display:flex;justify-content:center;align-items:flex-start;padding:32px 16px 60px;}
+
+  /* === CARTE PRINCIPALE === */
+  .receipt{background:#fff;width:100%;max-width:460px;border-radius:0;position:relative;overflow:hidden;
+    box-shadow:0 40px 100px rgba(0,0,0,0.7);}
+
+  /* === FILIGRANE — vrai élément IMG (visible en PDF) === */
+  .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-15deg);
+    width:68%;pointer-events:none;z-index:0;opacity:0.055;filter:grayscale(20%) blur(1px);}
+
+  /* Tout le contenu au-dessus du filigrane */
+  .receipt > *:not(.watermark){position:relative;z-index:1;}
+
+  /* === HEADER NOIR LUXE === */
+  .hdr{background:linear-gradient(160deg,#111 0%,#1e1e0e 60%,#111 100%);
+    padding:0 0 24px;text-align:center;position:relative;overflow:hidden;}
+
+  /* Motif de fond header */
+  .hdr::before{content:'';position:absolute;inset:0;
+    background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(166,124,0,0.03) 10px,rgba(166,124,0,0.03) 20px);
+    pointer-events:none;}
+
+  /* Bande dorée top */
+  .gold-stripe-top{height:5px;background:linear-gradient(90deg,#6b4f00,#A67C00,#D4AF37,#fff4b0,#D4AF37,#A67C00,#6b4f00);}
+
+  /* Logo cercle */
+  .logo-zone{padding:28px 0 20px;}
+  .logo-outer{display:inline-flex;align-items:center;justify-content:center;
+    width:148px;height:148px;border-radius:50%;
+    background:conic-gradient(#A67C00 0deg,#D4AF37 90deg,#fff4b0 180deg,#D4AF37 270deg,#A67C00 360deg);
+    padding:5px;box-shadow:0 0 0 2px rgba(166,124,0,0.3), 0 12px 40px rgba(166,124,0,0.6);}
+  .logo-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;border:3px solid #0a0a0a;background:#111;}
+  .logo-inner img{width:100%;height:100%;object-fit:cover;display:block;}
+
+  /* Nom boutique */
+  .shop-name{font-family:'Cormorant Garamond',serif;color:#D4AF37;
+    font-size:22px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-top:4px;}
+  .shop-tagline{color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:4px;text-transform:uppercase;margin-top:3px;}
+  .shop-country{color:#A67C00;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;font-weight:600;}
+
+  /* Badge référence */
+  .ref-badge{display:inline-block;margin-top:16px;
+    background:linear-gradient(90deg,#7a5c00,#A67C00,#D4AF37,#A67C00,#7a5c00);
+    color:#fff;padding:7px 24px;border-radius:40px;
+    font-weight:700;font-size:11px;letter-spacing:2px;
+    box-shadow:0 4px 16px rgba(166,124,0,0.5);}
+
+  /* Bande dorée bottom header */
+  .gold-stripe-bot{height:3px;background:linear-gradient(90deg,transparent,#A67C00,#D4AF37,#A67C00,transparent);}
+
+  /* === CORPS === */
+  .body{padding:22px 26px;}
+
+  /* Section titles */
+  .sec-title{display:flex;align-items:center;gap:8px;
+    font-size:8.5px;text-transform:uppercase;letter-spacing:2.5px;color:#A67C00;
+    font-weight:700;margin:20px 0 8px;padding-bottom:5px;
+    border-bottom:1px solid rgba(166,124,0,0.15);}
+  .sec-title:first-child{margin-top:0;}
+  .sec-title::before{content:'';display:block;width:16px;height:2px;
+    background:linear-gradient(90deg,#A67C00,#D4AF37);border-radius:2px;flex-shrink:0;}
+
+  /* Lignes de données */
+  .row{display:flex;justify-content:space-between;align-items:flex-start;
+    padding:8px 0;border-bottom:1px dashed rgba(0,0,0,0.06);}
+  .row:last-child{border-bottom:none;}
+  .lbl{font-size:11.5px;color:#999;font-weight:500;flex-shrink:0;padding-right:12px;}
+  .val{font-size:13px;color:#111;font-weight:600;text-align:right;word-break:break-word;max-width:58%;}
+
+  /* Boîte notes */
+  .notes-box{background:#fafaf5;border:1px solid rgba(166,124,0,0.12);
+    border-left:3px solid #A67C00;border-radius:8px;
+    padding:10px 14px;font-size:12px;color:#555;line-height:1.6;margin:10px 0;}
+
+  /* === MONTANT TOTAL === */
+  .amount-section{margin:20px 0;position:relative;}
+  .amount-section::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(166,124,0,0.2),transparent);}
+  .amount-box{background:linear-gradient(135deg,#fffbee,#fff8d6,#fffbee);
+    border:1.5px solid #A67C00;border-radius:16px;padding:20px;text-align:center;
+    box-shadow:inset 0 2px 8px rgba(166,124,0,0.08), 0 4px 20px rgba(166,124,0,0.12);}
+  .amount-label{font-size:9px;text-transform:uppercase;letter-spacing:3px;
+    color:#A67C00;font-weight:700;margin-bottom:6px;}
+  .amount-val{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;
+    color:#A67C00;line-height:1;background:linear-gradient(135deg,#8b6400,#D4AF37,#8b6400);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .amount-currency{font-size:14px;font-weight:600;color:#A67C00;
+    -webkit-text-fill-color:#A67C00;letter-spacing:1px;}
+
+  /* Signature / tampon */
+  .stamp-zone{display:flex;justify-content:space-between;align-items:flex-end;
+    margin:20px 0 8px;padding:14px 0;
+    border-top:1px dashed rgba(0,0,0,0.1);}
+  .sig-block{text-align:center;}
+  .sig-line{width:100px;border-bottom:1.5px solid #ccc;margin-bottom:4px;}
+  .sig-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#bbb;}
+  .stamp{width:72px;height:72px;border-radius:50%;
+    border:3px solid rgba(166,124,0,0.4);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    color:rgba(166,124,0,0.5);font-size:7px;letter-spacing:1px;
+    text-transform:uppercase;font-weight:700;text-align:center;
+    box-shadow:inset 0 0 0 5px rgba(166,124,0,0.08);padding:6px;}
+  .stamp-logo{width:32px;height:32px;border-radius:50%;object-fit:cover;opacity:0.5;margin-bottom:3px;}
+
+  /* === ACTIONS (masquées à l'impression) === */
+  .actions{padding:0 24px 24px;display:flex;flex-direction:column;gap:10px;}
+  .btn{padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;
+    font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;
+    gap:8px;text-decoration:none;transition:all .15s;letter-spacing:.3px;}
+  .btn:active{opacity:.9;transform:scale(.99);}
+  .btn-wa{background:linear-gradient(135deg,#25D366,#1ebe5d);color:#fff;
+    box-shadow:0 6px 20px rgba(37,211,102,0.3);}
+  .btn-print{background:#111;color:#D4AF37;border:2px solid #A67C00;
+    box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+
+  /* === FOOTER === */
+  .footer{background:linear-gradient(to bottom,#f9f7f0,#f2f0e8);
+    padding:16px 24px 20px;text-align:center;
+    border-top:2px solid rgba(166,124,0,0.1);}
+  .footer-logo-wrap{display:inline-block;border-radius:50%;
+    background:linear-gradient(135deg,#A67C00,#D4AF37);
+    padding:2px;margin-bottom:8px;box-shadow:0 3px 12px rgba(166,124,0,0.3);}
+  .footer-logo{width:34px;height:34px;border-radius:50%;object-fit:cover;
+    border:2px solid #fff;display:block;}
+  .footer p{font-size:10.5px;color:#aaa;line-height:2;}
+  .footer strong{color:#888;}
+  .footer-brand{font-size:8.5px;letter-spacing:2px;color:#c9a227;
+    text-transform:uppercase;margin-top:6px;font-weight:600;}
+
+  /* === IMPRESSION / PDF === */
   @media print{
-    body{background:white;padding:0;}
-    .card{box-shadow:none;border-radius:0;max-width:100%;}
+    html,body{background:#fff !important;padding:0;margin:0;}
+    body{display:block;padding:0;}
+    .receipt{max-width:100%;box-shadow:none;border-radius:0;}
     .actions{display:none !important;}
-    .header::after{display:none;}
-    .card::before{opacity:0.05;}
+    .watermark{opacity:0.07 !important;}
+    .gold-stripe-top{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .amount-box{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .sec-title::before{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    @page{margin:0;}
   }
 </style></head>
 <body>
-<div class="card">
-  <div class="header">
-    <div class="logo-ring"><img src="${shopLogo}" alt="${shopName}" onerror="this.parentNode.style.display='none'"></div>
+<div class="receipt">
+
+  <!-- FILIGRANE réel (visible en PDF) -->
+  <img class="watermark" src="${shopLogo}" alt="" onerror="this.style.display='none'">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="gold-stripe-top"></div>
+    <div class="logo-zone">
+      <div class="logo-outer">
+        <div class="logo-inner">
+          <img src="${shopLogo}" alt="${shopName}" onerror="this.parentNode.parentNode.style.background='#A67C00'">
+        </div>
+      </div>
+    </div>
     <div class="shop-name">${shopName}</div>
-    <div class="shop-sub">Fashion Design</div>
-    <div class="shop-country">🇳🇪 NIGER</div>
-    <div class="badge-ref">${ref}</div>
+    <div class="shop-tagline">Fashion Design &nbsp;·&nbsp; Atelier de Couture</div>
+    <div class="shop-country">&#127475;&#127466; NIGER &mdash; ${shopAddr}</div>
+    <div class="ref-badge">&#10022; ${ref} &#10022;</div>
   </div>
+  <div class="gold-stripe-bot"></div>
 
+  <!-- CORPS -->
   <div class="body">
-    <div class="section-label">Informations du reçu</div>
-    <div class="field-row"><span class="field-label">Date d'enregistrement</span><span class="field-val">${dateToday}</span></div>
-    <div class="field-row"><span class="field-label">RDV</span><span class="field-val">${dateStr}</span></div>
 
-    <div class="section-label">Client</div>
-    <div class="field-row"><span class="field-label">Nom</span><span class="field-val">${task.client}</span></div>
-    <div class="field-row"><span class="field-label">WhatsApp</span><span class="field-val">${task.phone || 'N/A'}</span></div>
+    <!-- Infos reçu -->
+    <div class="sec-title">Informations du reçu</div>
+    <div class="row"><span class="lbl">Référence</span><span class="val" style="color:#A67C00;font-weight:700;">${ref}</span></div>
+    <div class="row"><span class="lbl">Date d'enregistrement</span><span class="val">${dateToday}</span></div>
+    <div class="row"><span class="lbl">Date de livraison</span><span class="val">${dateStr}</span></div>
 
-    <div class="section-label">Commande</div>
-    <div class="field-row"><span class="field-label">Article</span><span class="field-val">${task.type}</span></div>
-    ${task.assignee ? `<div class="field-row"><span class="field-label">Tailleur assigné</span><span class="field-val">${task.assignee}</span></div>` : ''}
-    ${task.notes ? `<div class="field-row"><span class="field-label">Mesures / Notes</span><span class="field-val" style="font-size:12px;">${task.notes}</span></div>` : ''}
+    <!-- Client -->
+    <div class="sec-title">Client</div>
+    <div class="row"><span class="lbl">Nom complet</span><span class="val">${task.client}</span></div>
+    <div class="row"><span class="lbl">WhatsApp</span><span class="val">${task.phone || '—'}</span></div>
 
-    ${task.price ? `<div class="amount-box"><div class="amount-label">Montant Total</div><div class="amount-val">${formatMoney(task.price)} ${cur}</div></div>` : ''}
+    <!-- Commande -->
+    <div class="sec-title">Commande</div>
+    <div class="row"><span class="lbl">Article</span><span class="val">${task.type}</span></div>
+    ${task.assignee ? `<div class="row"><span class="lbl">Tailleur assigné</span><span class="val">${task.assignee}</span></div>` : ''}
+
+    ${task.notes ? `
+    <div class="sec-title">Mesures &amp; Notes</div>
+    <div class="notes-box">${task.notes}</div>` : ''}
+
+    <!-- Montant -->
+    ${task.price ? `
+    <div class="amount-section">
+      <div class="amount-box">
+        <div class="amount-label">&#9733; Montant Total &#9733;</div>
+        <div class="amount-val">${formatMoney(task.price)} <span class="amount-currency">${cur}</span></div>
+      </div>
+    </div>` : ''}
+
+    <!-- Signature & Tampon -->
+    <div class="stamp-zone">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-label">Signature Client</div>
+      </div>
+      <div class="stamp">
+        <img class="stamp-logo" src="${shopLogo}" alt="" onerror="this.style.display='none'">
+        <span>Officiel</span>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-label">Cachet Boutique</div>
+      </div>
+    </div>
+
   </div>
 
+  <!-- BOUTONS (masqués en PDF) -->
   <div class="actions">
-    ${waClientLink ? `<a href="${waClientLink}" target="_blank" class="btn btn-wa">📱 Envoyer le reçu via WhatsApp</a>` : ''}
-    <button onclick="window.print()" class="btn btn-print">🖨&nbsp; Sauvegarder en PDF</button>
+    ${waClientLink ? `<a href="${waClientLink}" target="_blank" class="btn btn-wa">&#128241; Envoyer via WhatsApp</a>` : ''}
+    <button onclick="window.print()" class="btn btn-print">&#128438; Sauvegarder en PDF</button>
   </div>
 
+  <!-- FOOTER -->
   <div class="footer">
-    <img src="${shopLogo}" alt="Logo" class="footer-logo" onerror="this.style.display='none'">
-    <p>📞 ${shopPhone} &nbsp;|&nbsp; 📍 ${shopAddr}</p>
-    <p style="margin-top:2px;">Merci pour votre fidélité — <strong>${shopName}</strong></p>
-    <p style="margin-top:4px;font-size:9px;letter-spacing:1.5px;color:#c9a227;text-transform:uppercase;">SARKIN WANKA NIGER &mdash; Qualité & Excellence</p>
+    <div class="footer-logo-wrap">
+      <img class="footer-logo" src="${shopLogo}" alt="Logo" onerror="this.parentNode.style.display='none'">
+    </div>
+    <p>&#128222; ${shopPhone} &nbsp;&bull;&nbsp; &#128205; ${shopAddr}</p>
+    <p style="margin-top:2px;">Merci pour votre confiance &mdash; <strong>${shopName}</strong></p>
+    <div class="footer-brand">SARKIN WANKA NIGER &mdash; Qualit&eacute; &amp; Excellence</div>
   </div>
+
 </div>
 </body></html>`);
         win.document.close();
