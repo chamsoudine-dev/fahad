@@ -1,13 +1,19 @@
 {
-  "name": "Sarkin Wanka Fashion Design",
+  "name": "SARKIN WANKA NIGER",
   "short_name": "Sarkin Wanka",
-  "description": "Gestion de commandes pour atelier de couture",
+  "description": "Gestion de commandes — SARKIN WANKA Fashion Design, Niamey Niger",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F8F6F0",
   "theme_color": "#A67C00",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "assets/img/logo.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "assets/img/logo.png",
       "sizes": "192x192",
@@ -32,6 +38,11 @@
     {
       "name": "Atelier",
       "url": "./atelier.html",
+      "icons": [{"src": "assets/img/logo.png", "sizes": "96x96"}]
+    },
+    {
+      "name": "Boutique",
+      "url": "./boutique.html",
       "icons": [{"src": "assets/img/logo.png", "sizes": "96x96"}]
     }
   ],

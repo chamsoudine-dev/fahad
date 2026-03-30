@@ -1212,7 +1212,10 @@ function printReceipt(taskOrJson) {
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'Outfit',sans-serif;background:#111;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:30px 16px;}
-  .card{background:#fff;max-width:440px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.6);}
+  .card{background:#fff;max-width:440px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.6);position:relative;}
+  /* FILIGRANE LOGO EN ARRIÈRE-PLAN */
+  .card::before{content:'';position:absolute;inset:0;background:url('${shopLogo}') center/55% no-repeat;opacity:0.06;filter:blur(2px) grayscale(30%);pointer-events:none;z-index:0;}
+  .card > *{position:relative;z-index:1;}
   /* HEADER NOIR PREMIUM */
   .header{background:linear-gradient(160deg,#1a1a1a 0%,#2c2c2c 100%);padding:35px 24px 28px;text-align:center;position:relative;}
   .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#A67C00,#D4A800,#A67C00,transparent);}
@@ -1220,6 +1223,7 @@ function printReceipt(taskOrJson) {
   .logo-ring img{width:130px;height:130px;border-radius:50%;object-fit:cover;display:block;border:3px solid #111;}
   .shop-name{font-family:'Cormorant Garamond',serif;color:#A67C00;font-size:20px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
   .shop-sub{color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:3px;text-transform:uppercase;}
+  .shop-country{color:rgba(166,124,0,0.85);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;margin-top:3px;font-weight:600;}
   .badge-ref{display:inline-block;background:linear-gradient(90deg,#A67C00,#D4A800);color:#fff;padding:6px 20px;border-radius:30px;font-weight:700;font-size:12px;letter-spacing:1.5px;margin-top:14px;}
   /* BODY */
   .body{padding:24px;}
@@ -1242,11 +1246,13 @@ function printReceipt(taskOrJson) {
   /* FOOTER */
   .footer{background:#f8f8f8;padding:14px 24px;text-align:center;border-top:1px solid #f0f0f0;}
   .footer p{font-size:11px;color:#aaa;line-height:1.8;}
+  .footer-logo{width:36px;height:36px;border-radius:50%;object-fit:cover;opacity:0.6;margin-bottom:6px;border:2px solid #A67C00;}
   @media print{
     body{background:white;padding:0;}
     .card{box-shadow:none;border-radius:0;max-width:100%;}
     .actions{display:none !important;}
     .header::after{display:none;}
+    .card::before{opacity:0.05;}
   }
 </style></head>
 <body>
@@ -1255,6 +1261,7 @@ function printReceipt(taskOrJson) {
     <div class="logo-ring"><img src="${shopLogo}" alt="${shopName}" onerror="this.parentNode.style.display='none'"></div>
     <div class="shop-name">${shopName}</div>
     <div class="shop-sub">Fashion Design</div>
+    <div class="shop-country">🇳🇪 NIGER</div>
     <div class="badge-ref">${ref}</div>
   </div>
 
@@ -1281,8 +1288,10 @@ function printReceipt(taskOrJson) {
   </div>
 
   <div class="footer">
+    <img src="${shopLogo}" alt="Logo" class="footer-logo" onerror="this.style.display='none'">
     <p>📞 ${shopPhone} &nbsp;|&nbsp; 📍 ${shopAddr}</p>
     <p style="margin-top:2px;">Merci pour votre fidélité — <strong>${shopName}</strong></p>
+    <p style="margin-top:4px;font-size:9px;letter-spacing:1.5px;color:#c9a227;text-transform:uppercase;">SARKIN WANKA NIGER &mdash; Qualité & Excellence</p>
   </div>
 </div>
 </body></html>`);
@@ -1313,7 +1322,7 @@ function injectAdminModals() {
     <!-- Global Admin Login Overlay -->
     <div id="admin-login-overlay" style="display:none; position:fixed; inset:0; background:var(--bg-color); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:2rem;">
         <div class="glass-panel" style="padding:2.5rem; max-width:400px; width:100%; text-align:center;">
-            <img src="https://ui-avatars.com/api/?name=Sarkin+Wanka&background=A67C00&color=fff&size=256" style="width:100px; height:100px; border-radius:50%; margin-bottom:1.5rem; box-shadow:var(--shadow-gold);">
+            <img src="assets/img/logo.png" style="width:110px; height:110px; border-radius:50%; margin-bottom:1.5rem; box-shadow:var(--shadow-gold), 0 0 0 3px #A67C00; object-fit:cover;">
             <h2 style="font-family:'Cormorant Garamond',serif; margin-bottom:1.5rem; font-size:1.8rem;">Sarkin Wanka - Accès Admin</h2>
             <input type="password" id="admin-pwd-input" placeholder="Mot de passe ou Code" style="width:100%; padding:14px; margin-bottom:1rem; border:var(--border-subtle); border-radius:var(--border-radius-sm); font-size:1.1rem; text-align:center; font-family:'Outfit';">
             <button class="btn btn-primary" style="width:100%; justify-content:center; padding:14px; font-size:1.1rem; margin-bottom:1rem;" onclick="tryAdminLogin()">
