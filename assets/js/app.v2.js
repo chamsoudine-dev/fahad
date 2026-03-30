@@ -734,6 +734,9 @@ async function renderBoutique(searchTerm = '') {
                 <button class="btn btn-secondary" style="padding:8px;color:gray;" onclick="editTask('${task.id}')" title="Modifier">
                     <i class="fa-solid fa-pen"></i>
                 </button>
+                <button class="btn btn-secondary" style="padding:8px;color:var(--danger-color)" onclick="deleteTask('${task.id}')" title="Supprimer">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             </div>`;
         grid.appendChild(card);
     });
