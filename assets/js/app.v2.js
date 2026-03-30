@@ -1034,7 +1034,7 @@ async function renderTailleur() {
             ${photoHtml}
             <h3 style="margin-top:6px;">Modèle : ${task.type}</h3>
             <p style="color:var(--text-muted);font-size:0.9rem;">Client : ${task.client}</p>
-            ${task.notes ? `<div class="notes-box"><i class="fa-solid fa-ruler" style="color:var(--primary-color);margin-right:5px;"></i>${task.notes}</div>` : ''}
+            ${task.notes ? `<div class="notes-box" style="background:var(--primary-light);border:2.5px solid var(--primary-color);color:#000;font-size:1.1rem;padding:15px;margin:15px 0;box-shadow:0 10px 30px rgba(166,124,0,0.1);"><i class="fa-solid fa-ruler-combined" style="color:var(--primary-color);font-size:1.3rem;margin-right:10px;"></i><strong>MESURES & NOTES :</strong><br>${task.notes}</div>` : ''}
             <div class="card-actions">
                 <button class="btn btn-primary" style="flex:1;justify-content:center;background:var(--success-color);" onclick="finishTailleurTask('${task.id}')">
                     <i class="fa-solid fa-check"></i> Terminé !
@@ -1453,9 +1453,6 @@ async function printReceipt(taskOrId) {
     <div class="row"><span class="lbl">Article</span><span class="val">${task.type}</span></div>
     ${task.assignee ? `<div class="row"><span class="lbl">Tailleur assigné</span><span class="val">${task.assignee}</span></div>` : ''}
 
-    ${task.notes ? `
-    <div class="sec-title">Mesures &amp; Notes</div>
-    <div class="notes-box">${task.notes}</div>` : ''}
 
     <!-- Montant -->
     ${task.price ? `
@@ -1490,18 +1487,12 @@ async function printReceipt(taskOrId) {
     <button onclick="window.print()" class="btn btn-print">&#128438; Sauvegarder en PDF</button>
   </div>
 
-  <!-- FOOTER -->
-  <div class="footer">
-    <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-bottom:12px;">
-         <div class="footer-logo-wrap" style="margin:0;">
-            <img class="footer-logo" src="${shopLogo}" alt="Logo" onerror="this.parentNode.style.display='none'">
-         </div>
-         <img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=https://sarkin-wanka.vercel.app&color=A67C00" style="width:60px; height:60px; border:2.5px solid #fff; box-shadow:0 4px 12px rgba(166,124,0,0.2);" alt="QR Code">
-    </div>
+  <!-- FOOTER SIMPLE -->
+  <div class="footer" style="background:#fcfcfc;">
     <p>&#128222; ${shopPhone} &nbsp;&bull;&nbsp; &#128205; ${shopAddr}</p>
-    <p style="margin-top:2px;">🌍 <strong><a href="https://sarkin-wanka.vercel.app" style="color:#A67C00; text-decoration:none;">sarkin-wanka.vercel.app</a></strong></p>
+    <p style="margin-top:2px; font-size:11px;">🌍 <strong>sarkin-wanka.vercel.app</strong></p>
     <p style="margin-top:2px;">Merci pour votre confiance &mdash; <strong>${shopName}</strong></p>
-    <div class="footer-brand">SARKIN WANKA NIGER &mdash; Qualit&eacute; &amp; Excellence</div>
+    <div class="footer-brand">SARKIN WANKA NIGER &mdash; Excellence &amp; Qualit&eacute;</div>
   </div>
 
 </div>
