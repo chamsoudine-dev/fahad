@@ -144,6 +144,23 @@
                         <i class="fa-solid fa-scissors"></i> Accéder à l'Espace Tailleur
                     </button>
                 </div>
+                </div>
+            </div>
+
+            <!-- Zone de Danger / Maintenance -->
+            <div class="settings-card" style="margin-top:1.5rem; border:1px solid #ff000022; background:rgba(211,47,47,0.03);">
+                <h2 class="settings-section-title" style="color:var(--danger-color);"><i class="fa-solid fa-triangle-exclamation"></i> Zone de Danger (Maintenance)</h2>
+                <div class="form-group">
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">Ces outils permettent de supprimer massivement les données du serveur. <strong>Attention : cette action est définitive.</strong></p>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <button class="btn btn-secondary" style="color:var(--danger-color); border-color:var(--danger-color); font-size:0.8rem; justify-content:center;" onclick="doBulkDelete('livre')">
+                        <i class="fa-solid fa-broom"></i> Vider Historique (Livrés)
+                    </button>
+                    <button class="btn btn-secondary" style="color:var(--danger-color); border-color:var(--danger-color); font-size:0.8rem; justify-content:center;" onclick="doBulkDelete('all')">
+                        <i class="fa-solid fa-trash-can"></i> Tout Supprimer
+                    </button>
+                </div>
             </div>
         </section>
     </main>

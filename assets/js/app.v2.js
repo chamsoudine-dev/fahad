@@ -150,25 +150,37 @@ async function saveTask(task) {
 }
 
 async function deleteTask(id) {
+    if (!id) return false;
     const confirmed = await promptSecureAction("Entrez le mot de passe pour supprimer définitivement cette commande :");
-    if (!confirmed) return;
+    if (!confirmed) {
+        showToast("Suppression annulée.", "info");
+        return false;
+    }
 
+    let serverDeleted = false;
     if (db) {
         try {
             await db.collection('tasks').doc(id).delete();
+            serverDeleted = true;
         } catch (e) {
-            console.error("Erreur suppression:", e);
-            showToast("Impossible de supprimer sur le serveur (Hors-ligne ?)", "error");
+            console.error("Erreur suppression Firestore:", e);
+            showToast("⚠️ Échec serveur (Vérifiez les 'Rules' Firestore)", "error");
         }
     }
 
-    // Suppression du cache local aussi
+    // On force la mise à jour locale même si le serveur traîne
     const local = _getLocalTasks().filter(t => t.id !== id);
     localStorage.setItem('sw_tasks_cache', JSON.stringify(local));
 
     renderAgenda(); renderAtelier(); renderBoutique(); renderBibliotheque();
     updateStats(); renderRevenueBanner();
-    showToast("✅ Commande supprimée définitivement.", "info");
+    
+    if (serverDeleted) {
+        showToast("✅ Commande supprimée (Serveur + Local)", "info");
+    } else {
+        showToast("✅ Commande retirée de l'affichage local.", "warning");
+    }
+    return true;
 }
 
 async function updateTaskStep(id, newStep) {
@@ -1451,10 +1463,14 @@ function printReceipt(taskOrJson) {
 
   <!-- FOOTER -->
   <div class="footer">
-    <div class="footer-logo-wrap">
-      <img class="footer-logo" src="${shopLogo}" alt="Logo" onerror="this.parentNode.style.display='none'">
+    <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-bottom:12px;">
+         <div class="footer-logo-wrap" style="margin:0;">
+            <img class="footer-logo" src="${shopLogo}" alt="Logo" onerror="this.parentNode.style.display='none'">
+         </div>
+         <img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=https://sarkin-wanka.vercel.app&color=A67C00" style="width:60px; height:60px; border:2.5px solid #fff; box-shadow:0 4px 12px rgba(166,124,0,0.2);" alt="QR Code">
     </div>
     <p>&#128222; ${shopPhone} &nbsp;&bull;&nbsp; &#128205; ${shopAddr}</p>
+    <p style="margin-top:2px;">🌍 <strong><a href="https://sarkin-wanka.vercel.app" style="color:#A67C00; text-decoration:none;">sarkin-wanka.vercel.app</a></strong></p>
     <p style="margin-top:2px;">Merci pour votre confiance &mdash; <strong>${shopName}</strong></p>
     <div class="footer-brand">SARKIN WANKA NIGER &mdash; Qualit&eacute; &amp; Excellence</div>
   </div>
@@ -1673,6 +1689,47 @@ async function handleDeleteFromModal() {
 function openFinanceModal() {
     document.getElementById('finance-modal').classList.add('active');
     calculateFinances();
+}
+
+async function doBulkDelete(type) {
+    const msg = type === 'all' 
+        ? "Voulez-vous vraiment SUPPRIMER TOUTES LES DONNÉES de l'application ? Cette action est irréversible."
+        : "Voulez-vous supprimer tout l'historique des vêtements déjà LIVRÉS ?";
+    
+    const ok = await promptSecureAction(msg);
+    if (!ok) return;
+
+    showToast("Nettoyage en cours...", "info");
+    const tasks = await getTasks();
+    let toDelete = [];
+    
+    if (type === 'all') {
+        toDelete = tasks;
+    } else {
+        toDelete = tasks.filter(t => t.step === 'livre');
+    }
+
+    if (toDelete.length === 0) {
+        showToast("Rien à supprimer.", "info");
+        return;
+    }
+
+    let count = 0;
+    for (const t of toDelete) {
+        try {
+            if (db) await db.collection('tasks').doc(t.id).delete();
+            count++;
+        } catch(e) { console.error(e); }
+    }
+
+    // Vider le cache local pour ces éléments
+    const keepIds = tasks.filter(t => !toDelete.find(x => x.id === t.id)).map(t => t.id);
+    const newLocal = (await getTasks()).filter(t => keepIds.includes(t.id));
+    localStorage.setItem('sw_tasks_cache', JSON.stringify(newLocal));
+
+    renderAgenda(); renderAtelier(); renderBoutique(); renderBibliotheque();
+    updateStats();
+    showToast(`✅ ${count} éléments supprimés avec succès.`, "success");
 }
 
 async function calculateFinances() {
