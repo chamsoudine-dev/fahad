@@ -158,6 +158,7 @@ async function deleteTask(id) {
             await db.collection('tasks').doc(id).delete();
         } catch (e) {
             console.error("Erreur suppression:", e);
+            showToast("Impossible de supprimer sur le serveur (Hors-ligne ?)", "error");
         }
     }
 
@@ -167,6 +168,7 @@ async function deleteTask(id) {
 
     renderAgenda(); renderAtelier(); renderBoutique(); renderBibliotheque();
     updateStats(); renderRevenueBanner();
+    showToast("✅ Commande supprimée définitivement.", "info");
 }
 
 async function updateTaskStep(id, newStep) {
