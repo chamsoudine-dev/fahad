@@ -1825,6 +1825,10 @@ function setupPhoneAutocomplete() {
 // INIT GLOBAL UPDATED
 // ===================================================================
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log("---------------------------------------");
+    console.log("🚀 SARKIN WANKA NIGER - Dashboard v2.3");
+    console.log("---------------------------------------");
+    
     initTheme();
     updateDateDisplay();
 
