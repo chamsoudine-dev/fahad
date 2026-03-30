@@ -136,9 +136,15 @@
                 <label>Notes &amp; Mesures</label>
                 <textarea id="task-notes" rows="3" placeholder="Ex : Tour de taille 75cm, longueur 120cm…"></textarea>
             </div>
-            <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="closeNewTaskModal()">Annuler</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Enregistrer</button>
+            
+            <div class="form-actions" style="justify-content: space-between !important; display: flex !important;">
+                <button type="button" id="btn-delete-in-modal" class="btn btn-secondary" style="color:var(--danger-color); display:none; border-color:var(--danger-color);" onclick="handleDeleteFromModal()">
+                    <i class="fa-solid fa-trash"></i> Supprimer
+                </button>
+                <div style="display:flex; gap:10px; margin-left: auto;">
+                    <button type="button" class="btn btn-secondary" onclick="closeNewTaskModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
             </div>
         </form>
     </div>

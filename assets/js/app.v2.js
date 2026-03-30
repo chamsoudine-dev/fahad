@@ -852,13 +852,7 @@ async function markAsDelivered(id) {
 let currentPhotoFile = null;
 let currentEditingTaskId = null;
 
-function openNewTaskModal() {
-    document.getElementById('task-modal').classList.add('active');
-    const sel = document.getElementById('task-assignee');
-    if (sel) {
-        getTailors().then(tailors => {
-            sel.innerHTML = '<option value="">— Atelier Général —</option>' +
-                tailors.map(t => `<option value="${t.username}">${t.username}</option>`).join('');
+">${t.username}</option>`).join('');
         });
     }
 }
@@ -1598,9 +1592,14 @@ function promptSecureAction(message) {
     if (window.location.pathname.includes('tailleur.html')) {
         return showConfirmModal(message);
     }
+    // ✅ AUTO-APPROVE SI DÉJÀ AUTHENTIFIÉ (Évite de retaper le mot de passe s'il est déjà admin)
+    if (sessionStorage.getItem('adminAuthed') === 'true') {
+        return showConfirmModal(message);
+    }
     return new Promise(resolve => {
         _adminPromptResolve = resolve;
         const modal = document.getElementById('admin-prompt-modal');
+        if (!modal) return resolve(showConfirmModal(message)); 
         document.getElementById('admin-prompt-text').innerText = message;
         document.getElementById('admin-prompt-input').value = '';
         modal.classList.add('active');
@@ -1644,6 +1643,31 @@ async function editTask(id) {
     openNewTaskModal();
     const hd = document.querySelector('#task-modal h2');
     if(hd) hd.innerHTML = '<i class="fa-solid fa-pen" style="color:var(--primary-color);"></i> Modifier Commande';
+    
+    // Afficher le bouton de suppression uniquement en mode modification
+    const delBtn = document.getElementById('btn-delete-in-modal');
+    if (delBtn) delBtn.style.display = 'block';
+}
+
+function openNewTaskModal() {
+    currentEditingTaskId = null;
+    const form = document.getElementById('new-task-form');
+    if (form) form.reset();
+    document.getElementById('photo-preview').style.display = 'none';
+    currentPhotoFile = null;
+    const hd = document.querySelector('#task-modal h2');
+    if (hd) hd.innerHTML = '<i class="fa-solid fa-plus" style="color:var(--primary-color);font-size:1.1rem;"></i> Nouvelle Commande';
+    
+    const delBtn = document.getElementById('btn-delete-in-modal');
+    if (delBtn) delBtn.style.display = 'none';
+    
+    document.getElementById('task-modal').classList.add('active');
+}
+
+async function handleDeleteFromModal() {
+    if (!currentEditingTaskId) return;
+    const ok = await deleteTask(currentEditingTaskId);
+    if (ok !== false) closeNewTaskModal();
 }
 
 function openFinanceModal() {
